@@ -38,7 +38,7 @@ int main() {
     cudaGetDeviceProperties(&prop, 0);
     cout << "Using device: "<< prop.name << endl;
     // ---------------------------------------------------------------------------//
-    int N = 1000;
+    int N = 10;
     int *h_a = (int*)malloc(N * sizeof(int));
     int *d_a = nullptr;
     for (int i = 0; i < N; i++) h_a[i] = 0;
