@@ -14,15 +14,14 @@ __global__ void vector_add_gpu(float *a, float *b, float *c, int N) {
 }
 
 void vector_add_cpu(float *a, float *b, float *c, int N) {
+    cout << "--------------------------------------------" << endl;
     for (int i=0; i<N; i++) {
         if (i < N) {
             c[i] = a[i] + b[i];
         }
     
     }
-    cout << "v_c[0] = " << c[0] << ", v_c[1] = " << c[1] << ", v_c[" << N << "] = " << c[N-1] << " ...\n";
-    cout << "--------------------------------------------" << endl;
-
+    cout << "v_c[0] = " << c[0] << ", v_c[1] = " << c[1] << ", v_c[" << N-1 << "] = " << c[N-1] << " ...\n";
 }
 
 
@@ -31,7 +30,8 @@ int main() {
     cudaGetDeviceProperties(&prop, 0);
     cout << "Using device: "<< prop.name << endl;
     // ---------------------------------------------------------------------------//
-    int N = 10;
+    int N = 512;
+    cout << "N= " << N << endl;
     float *h_va = (float*)malloc(N * sizeof(float));
     float *h_vb = (float*)malloc(N * sizeof(float));
     float *h_vc = (float*)malloc(N * sizeof(float));
@@ -55,7 +55,11 @@ int main() {
     dim3 grid_size(1);
     dim3 block_size(N);
 
+    auto start = high_resolution_clock::now();
     vector_add_cpu(h_va, h_vb, h_vc, N);
+    auto stop = high_resolution_clock::now();
+    auto duration = duration_cast<microseconds>(stop - start);
+    cout << "Time elapsed: " << duration.count() << " us" << endl;
   
     cudaEvent_t gpu_start, gpu_stop;
     cudaEventCreate(&gpu_start);
@@ -68,9 +72,8 @@ int main() {
     cudaEventSynchronize(gpu_stop);
 
     cudaMemcpy(h_vc, d_vc, N*sizeof(float), cudaMemcpyDeviceToHost);
-    for (int i=0; i < N; i++) {
-        cout << "v_c[" << i << "] = " << h_vc[i] << endl;
-    }
+    cout << "--------------------------------------------" << endl;
+    cout << "v_c[0] = " << h_vc[0] << ", v_c[1] = " << h_vc[1] << ", v_c[" << N-1 << "] = " << h_vc[N-1] << " ...\n";
 
     float milliseconds = 0;
     cudaEventElapsedTime(&milliseconds, gpu_start, gpu_stop);
