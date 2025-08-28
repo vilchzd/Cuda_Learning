@@ -4,7 +4,7 @@
 #include <iomanip>
 #include <cuda_runtime.h>
 
-#define N 256
+#define N 32
 #define BLOCK_SIZE 16
 
 using namespace std;
@@ -17,17 +17,17 @@ __global__ void transpose(float *in, float *out, int width) {
     
 
     if (i < width && j < width) {
-        t_mat[threadIdx.x][threadIdx.y] = in[i * width + j];
+        t_mat[threadIdx.y][threadIdx.x] = in[j * width + i];
     }
 
     __syncthreads();
 
-    int trans_i = threadIdx.y + BLOCK_SIZE * blockIdx.x;
-    int trans_j = threadIdx.x + BLOCK_SIZE * blockIdx.y;
+    int trans_i = threadIdx.x + BLOCK_SIZE * blockIdx.y;
+    int trans_j = threadIdx.y + BLOCK_SIZE * blockIdx.x;
 
 
     if (trans_i < width && trans_j < width) {
-        out[trans_i * width + trans_j] = t_mat[threadIdx.x][threadIdx.y];
+        out[trans_j * width + trans_i] = t_mat[threadIdx.x][threadIdx.y];
     }
 }
 
